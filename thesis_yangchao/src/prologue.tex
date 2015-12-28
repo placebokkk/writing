@@ -1,0 +1,32 @@
+\includepdfmerge{./cover.pdf, 1-6}
+
+\frontmatter
+\begin{spacing}{1.2}
+\begin{abstract}{Dirichlet过程，非参数贝叶斯模型，依赖于距离的中国餐馆过程，隐马尔科夫模型，主题分割，音素分割}
+在处理序列数据时，经常需要通过建立分割模型来描述由子现象单元构成的动态现象。一般而言，这类任务大致分为两类，第一类主要考虑建模单元内聚性以及相邻单元的差异性，如对一篇文章进行自动分段，常用的方法是在全局上寻找使某种准则最优的分割。另一类任务的单元间则具有较强的复现性，如基因序列分割和说话人检测，前者在观察值上有严格的重复子序列，后者虽然观察值并没有严格的重复，但是却存在某种相似性。对这类任务常用的方法是为子单元建立简单的模型，然后利用马尔科夫过程来描述它们之间的转化。不过这些方法都依赖于预先给定的参数个数---全局最优分割需要给定分割的个数，马尔科夫模型需要给定状态个数。本文通过引入Dirichlet过程先验，建立起非参数贝叶斯方法，使得模型可以随着数据的变化自动调整参数个数。
+
+本文分别选取广播新闻故事分割(story segmentation)和音素分割(phoneme segmentation)任务作为这两类分割任务的代表，将基于Dirichlet过程的非参数模型应用于其中。
+
+故事分割是主题分割的一种特殊形式，需要将一段文本流分割为故事流，本文主要研究新闻广播中的故事分割，即将完整的广播新闻节目分割为多段独立的新闻故事。本文从基于全局最大化似然的无监督贝叶斯方法出发，通过引入依赖于距离的中国餐馆过程(distance dependent Chinese restaurant process, dd-CRP)，为其建立了非参数模型。和几种常用的方法对比，本文提出的新方法可以自动发现合适的参数个数，并在F1值上得到了最优的结果。
+
+声学单元分割也称类音素分割，是语音研究中的一项基础任务。这一任务的目的是将音频流分割为类似音素的最小单元，以用于更高层的任务。本文用不同的高斯分布描述不同的声学单元，用马尔科夫过程描述单元间的转化，并增加一个分层Dirichlet过程作为模型参数的先验，建立起含有无限状态的隐马尔科夫模型，称之为分层Dirichlet过程隐马尔科夫模型(hierarchical Dirichlet process hidden Markov model, HDP-HMM)。实验结果表明，这一模型具有可观的分割效果，并可以用于对序列中子单元的聚类分析。
+\end{abstract}
+\end{spacing}
+\cleardoublepage
+\begin{spacing}{1.2}
+\begin{abstractEng}{Dirichlet process, Bayesian nonparametric, distance dependent Chinese restaurant process, hidden Markov model,story segmentation,phoneme segmentation}
+Segmentation model is used to describe dynamical phenomena formed of sub units when handling sequence data. In general，there are mainly two kinds of these tasks
+. The first is the task such as paragraph segmentation for documents which focuses on the cohesion of each unit and the diversity between adjacent units. The common approach is to find the best segmentation according some global optimization rules. For another kind task, the dynamical phenomena are formed of a set of reduplicate units. These include modeling the gene sequence which forms of a set of sub-sequences and the speaker diarization task, in which the data switches between different but reduplicate speaker voices. For these cases, Markov process with switches between a set of simpler models, are employed to describe the observed data. But these approaches typically rely on pre-specified number of parameters. The global optimization segmentation needs the number of segmentations and the Markov model needs the number of states. In this thesis a Bayesian nonparametric approach that allows for auto-adaptation of parameter number is developed by introducing a Dirichlet process prior on the model parameters. 
+
+This thesis studies two basic and essential tasks as specialization of the two kinds of task mentioned before. 
+
+The first is story segmentation, a special form of topic segmentation, which concerning converting a text stream into a story stream. This thesis focuses on the story segmentation task of broadcast news so that the goal is to cut the entire news into multiple independent news stories. This thesis develops a novelty nonparametric approach by plugging a distance dependent Chinese restaurant process into an unsupervised Bayesian segmentation approach.Experiments show that our approach outperforms both supervised and unsupervised approaches and the segmentation number can be automatically learned from data. 
+
+The kind of Markov switch model is studied via modelling unsupervised acoustic unit segmentation task(also called phoneme segmentation), which is a basic task in speech research area. This task needs to cut the speech signal stream into segments of acoustic unit which can be viewed as the smallest unit forming human speech. Then the acoustic unit can be used for higher level task. In this thesis, each kind acoustic unit is modeled as a Gaussian model and the switch between these units is modelled as a Markov process.  A HDP prior is put on this model to get a hidden Markov model with unbounded state number. The experiment results show the segmentation performance of our model is comparable with other state-of-art methods. And our model also shows a good property of cluster analysis for acoustic unit.
+
+\end{abstractEng}
+\cleardoublepage
+\end{spacing}
+\tableofcontents
+%\setcounter{page}{1}
+\mainmatter
