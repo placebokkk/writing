@@ -1,0 +1,176 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{nips13submit_e,times}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{bm}
+%\usepackage{ctex} %if use Chinese, uncomment this line.
+
+
+
+\title{Note on Word Representation}
+
+
+\author{
+Chao Yang\\
+Microsoft\\
+Suzhou \\
+\texttt{yangchao.42@outlook.com} \\
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\nipsfinalcopy % Uncomment for camera-ready version
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+Word representation (especially the word2vec tools released by Mikolov) have drawn much attention recent years. In this note, I will give some essentials about word-context matrix, SGNS and Glove. 
+\end{abstract}
+
+\section{Introduction}
+The most basic word representation method is to use the word itself, just as what we use every day. A more economic method is to set a vocabulary list and use the word's index as its representation\footnote{ We could further use some sophisticated index such as Huffman code to save more energy. }. Although the later could convert the word into a useful mathematical form\footnote {in machine learning literature, this is called as one-hot representation, which is very useful for formalization} , it catches no semantic information.
+
+There is another set of methods which put each word into a continuous space in which the similar words will get close to each other. A common assumption is that the words having similar context will have the similar meaning, or close vector representation. Usually, a word's context refers to the words surrounding this word in a sentence\footnote{But it could also be other information about the word.}. In this note, we ignore the order of the surrounding word, or saying we make an exchangeable assumption. This is also called as bag-of-words contexts. 
+
+The bag-of-words contexts could be extracted freely from any texts without any annotation. That means the resource from internet could be used directly. And when we get vector representation of word unsupervised, maybe it could be used in off-the -shelf model as an additional feature\footnote{Actually this is not easy as what you think at first glance}.
+
+\section{Model}
+In this section two kind of models are introduced, the count-based model and the log-bilinear model. The count-based method is very intuitive, but also very effective. In further, Common matrix factorization method could help map the high dimension vector into a low dimension space spanned by more efficient basis. The log-bilinear model introduced here are two recent famous models called Skip-Gram and Glove. The Skip-Gram model could also be described as a three-layer neural network in which the hidden layer's activation function is identify function. It should be noted that all the count-based and log-bilinear models only use bag-of-words contexts information. In fact, there are some essential relations between them. 
+
+\textbf{Contexts} Because all these methods use contexts to find the word vector representation, I will first introduce this concept. The basic contexts of a word are the surrounding words. e.g. in sentence `` Of cities filled with the foolish", the contexts of ``cities" are \{ of, filled, with, the, foolish\}. You could remove some stop words and do tokenization, the contexts may be \{ fill, foolish\}. you could also fix the windows size or use a dynamic windows size or any tricks you like. Bigrams could also be used as contexts. Notice that besides surrounding words, other infos like synatic role in parsing tree could also be used as context\footnote{in Skip-gram and Glove, the models are described using word context. But they could also involve other types.}.
+
+\textbf{Notice}  For each word, it has two vector representations. One for the word itself and one for used as context\footnote{in Skip-gram, these two vectors are called input vector representation and output vector representation}. 
+\subsection{word-context matrix}
+The intuitive idea to represent a word is directly use the contexts of this word. So we could construct a matrix of the counts of word-context co-occurrence. Then each row is the representation of a word by its context counts. We use $M^{count}$ to notate this matrix.
+
+\begin{table}[ht]
+\caption{The word-context count matrix $M^{count}$}
+\centering 
+\begin{tabular}{c c c c c} 
+\hline
+ & $c_1$ & $c_2$ & ... & $c_{|V_c|}$ \\
+\hline % inserts single horizontal line
+$w_1$ & 17 & 0 & ... & 1\\
+$w_2$ & 1 & 42 & ... & 0\\
+... & ... & ... & ... & ...\\
+$w_{|V_w|}$ & 2 & 89 & ... & 0 
+\end{tabular}
+\label{table:wcmatrix} 
+\end{table}
+
+
+\textbf{Another view}. The idea behind the word-context explicit representation is clear. Let's revisit this from a different view. First, we make some assumption:
+\begin{itemize}
+\item Any word w could be represented by a vector $\vec{w}$ and any context could be represented by a vector $\vec{c}$. 
+\item $\vec{w}\cdot\vec{c}$ could be used as an association metric of the word w and context c
+\item The words having similar context will have the similar meaning, or close vector representation
+ \end{itemize} 
+ 
+Then for two words $w_i$ and $w_j$ , if they are similar in semantic space, for most context $c_k$, $\vec{w}_i\cdot\vec{c}_k$ and $\vec{w}_j\cdot\vec{c}_k$ will have similar value. If we put all the products $\vec{w} \cdot\vec{c}$ into a matrix $M$ , in which $M_{ik}=\vec{w}_i\cdot\vec{c}_k$, we get
+
+\begin{equation}
+	M = WC^\mathrm{ T }
+\end{equation}
+where
+\begin{equation}
+	W = \begin{pmatrix} {\vec{w}_1}^\mathrm{ T } \\ {\vec{w}_2}^\mathrm{ T } \\ ... \\{\vec{w}_{|V_w|}}^\mathrm{ T }\end{pmatrix} , C^\mathrm{ T } = \begin{pmatrix} \vec{c}_1 & \vec{c}_2 & ... &\vec{c}_{|V_c|}\end{pmatrix}
+\end{equation}
+
+
+Let's revisit the word-context count matrix. If we let $M = M^{count}$, then it means we use the co-occurrence count of $w_i$ and $c_k$ $\#(w_i,c_k)$ to measure $\vec{w}_i\cdot\vec{c}_k$. Actually, raw count is not a good measure of the association of word and context, researchers have suggested a better metric called PMI. which is defined as the log ration between w and c's joint probability and the product of their marginal probabilities:
+\begin{equation}
+	PMI(w_i,c_k) = \log{\frac{p(w_i,c_k)}{p(w_i)p(c_k)}}
+\end{equation}
+In further someone finds Positive PMI(PPMI) is better:
+\begin{equation}
+	PPMI(w_i,c_k) = max\{PMI(w_i,c_k),0\}
+\end{equation}
+Notice that PPMI has a disadvantage the it has a big bias on rare context.
+
+\textbf{SVD}
+After we decide which measurement to use in M, we need to find a factorization of M to get W and C\footnote{We could view the above as a framework. What we need to do is how to set M and how to do factorization.}. We could assign W and C like this to get a trivial solution.
+\begin{equation}
+W = M , C = \Lambda
+\end{equation}
+This means all $\vec{c}$ are one-hot vectors (also orthonormal). In this factorization, W will be very sparse. To get a denser representation from this sparse representation, a matrix factorization method called SVD is applied.
+In SVD, $M$ will be first factorized into $U\cdot\Sigma\cdot V^\mathrm{ T }$, where $U$ and $V$ are orthonormal and $\Sigma$ is a diagonal matrix of eigenvalues in decreasing order. By keeping only the top $d$ elements of $\Sigma$, we obtain $M_d = U_d\cdot\Sigma_d\cdot V_d^\mathrm{ T }$ . $M_d$ is a low-rank approximation of $M$.
+
+Now the words could be represented in a new linear space $W^{SVD}=U_d\cdot\Sigma_d$, spanned by a set of more compact basics $C^{SVD} = V_d$ .
+
+\subsection{Skip Gram Negative Sampling}
+In mikolov's paper, the objective function of Skip Gram is defined as:
+\begin{equation}\label{sg:obj}
+argmax_\theta \sum\limits_{t=1}^\mathrm{ T } \sum\limits_{\mbox{\tiny$\begin{array}{c}
+-l \le j \le l\\
+j\neq 0\end{array}$}}{\log{p(w_{t+j}|w_t)}} 
+\end{equation}
+
+we could use a more general formation:
+\begin{equation}\label{sg:obj2}
+argmax_\theta \sum\limits_{t=1}^\mathrm{ T } \sum\limits_{c' \in Context(w_t)}{\log{p(c'|w_t)}} \\
+\end{equation}
+
+Then \eqref{sg:obj} could be view as a special case of \eqref{sg:obj2} in which $Context(w_t) = \{w_{t+j}|-l \le j \le l,j\neq 0\}$ .
+
+The conditional probability of a context given its word is defined as:
+\begin{equation}\label{sg:prob}
+p(c|w)= \frac{exp(\vec{c}\cdot\vec{w})}{\sum\limits_{c' \in V_c}{exp(\vec{c}'\cdot\vec{w})}} 
+\end{equation}
+
+
+\textbf{Neural view}
+Skip Gram is called predict-based model, for it models the prediction probability of a context given a word. It is also called as neural network-based model, for the origin paper of Mikolov gives a description under neural network framework. Equation \eqref{sg:obj} and \eqref{sg:prob} could be viewed as a three layer neural network:
+\begin{itemize}
+\item Input layer with one-hot input. 
+\item Hidden layer with identity activation function.
+\item Softmax output layer.
+\item The transition between the input layer and hidden layer is the matrix W
+\item The transition between the hidden layer and output layer is the matrix C
+\end{itemize}
+\textbf{Optimization}
+The objective \eqref{sg:obj} could be computed by gradient descent directly. But it is expensive due to the summation $\sum\limits_{c' \in {V_c}}{exp(\vec{c}'\cdot\vec{w})}$. \footnote{There are some approximation methods such as hierarchical softmax and NCE for this problem. But this note will not elaborate on these methods.} So Mikolov used an easier objective\footnote{The explanation of this objective will not be covered in this note currently.} to replace the $\log{p(c|w)}$:
+\begin{equation}\label{sgns:obj}
+\log{\sigma({\vec{c}\cdot\vec{w}})} + \sum\limits_{i=1}^{k}{E_{c_i \in P_n{(w)}}}{\log{\sigma(-{\vec{c}_i}\cdot\vec{w})}}
+\end{equation}
+
+$P_n{(w)}$ is the non-context probability distribution of word w. \eqref{sgns:obj} change the output layer's activation function form softmax to sigmoid. And at each iteration, it considers the current context and randomly use another k non-contexts (called as negative samples) to update the parameters.
+
+\textbf{Trick of SGNS} 
+\begin{itemize}
+\item dynamic context
+
+\item negative sampling number
+
+\item negative samples distribution smoothing
+\end{itemize}
+\subsection{Glove}
+We will not derive the detials of Glove here. From some reasonable assumptions of the data distribution and restrict the model space by some constraints, Pennington give that a reasonable representation should be:
+\begin{equation}
+\vec{w}_i\cdot\vec{c}_k + b_i + b_k = \log{(\#(w_i,c_k))}
+\end{equation}
+
+Letting $\vec{w}_i = \{\vec{w}_i,b_i,1\}$ and $\vec{c}_k = \{\vec{c}_k,1,b_k\}$ , we will get：
+\begin{equation}
+\vec{w}_i\cdot\vec{c}_k = \log{(\#(w_i,c_k))}
+\end{equation}
+To solve this, Glove use a weighted least square objective:
+\begin{equation}
+\sum\limits_i \sum\limits_k{\beta\left(\#(w_i,c_k)\right){(\vec{w}_i\cdot\vec{c}_k - \log{\left(\#(w_i,c_k)\right)})}^2}
+\end{equation}
+
+$\beta(\#(w_i,c_k))$ is a weight function that you could play with. In Glove, $\beta(x)= min\left\{1,{(x/{x_{max}})}^\gamma\right\} $.
+
+\end{document}
