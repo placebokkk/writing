@@ -2,14 +2,14 @@
 
 - [x] TACOTRON: TOWARDS END-TO-END SPEECH SYNTHESIS
 - [x] Natural TTS Synthesis by Conditioning WaveNet on Mel Spectrogram Predictions
-- [] List item Uncovering Latent Style Factors for Expressive Speech Synthesis
-- [] Towards End-to-End Prosody Transfer for Expressive Speech Synthesis with Tacotron
-- [] Style Tokens: Unsupervised Style Modeling, Control and Transfer in End-to-End Speech Synthesis
-- [] Transfer Learning from Speaker Verification to Multispeaker Text-To-Speech Synthesis
-- [] Predicting Expressive Speaking Style From Text in End-to-End Speech Synthesis
-- [] Semi-Supervised Training for Improving Data Efficiency in End-to-End Speech Synthesis
-- [] Hierarchical Generative Modeling for Controllable Speech Synthesis
-- [] Disentangling Correlated Speaker and Noise for Speech Synthesis via Data Augmentation and Adversarial Factorization
+- [ ] List item Uncovering Latent Style Factors for Expressive Speech Synthesis
+- [ ] Towards End-to-End Prosody Transfer for Expressive Speech Synthesis with Tacotron
+- [ ] Style Tokens: Unsupervised Style Modeling, Control and Transfer in End-to-End Speech Synthesis
+- [ ] Transfer Learning from Speaker Verification to Multispeaker Text-To-Speech Synthesis
+- [ ] Predicting Expressive Speaking Style From Text in End-to-End Speech Synthesis
+- [ ] Semi-Supervised Training for Improving Data Efficiency in End-to-End Speech Synthesis
+- [ ] Hierarchical Generative Modeling for Controllable Speech Synthesis
+- [ ] Disentangling Correlated Speaker and Noise for Speech Synthesis via Data Augmentation and Adversarial Factorization
 
 
 目标：通过学习Tacotron系列论文，
